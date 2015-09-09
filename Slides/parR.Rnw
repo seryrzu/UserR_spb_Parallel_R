@@ -405,14 +405,39 @@ plot(tm)
 \end{frame}
 
 \begin{frame}[fragile]{High-level API}
-  \begin{itemize}
-    \item parLapply(cl, x, fun, \ldots) --- parallel version of lapply()
-    \item parSapply(cl, X, FUN, \ldots, simplify = TRUE, USE.NAMES = TRUE) --- parallel version of sapply()
-    \item parApply(cl, X, MARGIN, FUN, \ldots) --- parallel version of apply()
-    \item parRapply(cl, x, fun, \ldots) --- row apply() for matrix
-    \item parCapply(cl, x, fun, \ldots) --- col apply() for matrix.
-  \end{itemize}
+%   \begin{itemize}
+%     \item parLapply(cl, x, fun, \ldots) --- parallel version of lapply()
+%     \item parSapply(cl, X, FUN, \ldots, simplify = TRUE, USE.NAMES = TRUE) --- parallel version of sapply()
+%     \item parApply(cl, X, MARGIN, FUN, \ldots) --- parallel version of apply()
+%     \item parRapply(cl, x, fun, \ldots) --- row apply() for matrix
+%     \item parCapply(cl, x, fun, \ldots) --- col apply() for matrix.
+%   \end{itemize}
   
+  \begin{table}[]
+    \rowcolors{1}{gray!25}{white}
+    \centering
+    \begin{tabular}{ll}
+      \texttt{parLapply(cl, x, fun, \ldots)} & parallel version of lapply() \\
+      \begin{tabular}{@{}l@{}}
+        \texttt{parSapply(cl, X, FUN, \ldots,} \\ 
+        \quad \texttt{simplify = TRUE, USE.NAMES = TRUE)}
+      \end{tabular} & 
+      \begin{tabular}{@{}l@{}}
+        Load Balancing version of \\ clusterApply() 
+      \end{tabular} \\
+      \texttt{parApply(cl, X, MARGIN, FUN, \ldots)} & 
+         parallel version of apply() \\
+      \texttt{parRapply(cl, x, fun, \ldots)} & 
+         \begin{tabular}{@{}l@{}}
+           row apply() for matrix
+         \end{tabular} \\
+       \begin{tabular}{@{}l@{}}
+          \texttt{parCapply(cl, x, fun, \ldots)}
+        \end{tabular}
+        & col apply() for matrix
+    \end{tabular}
+  \end{table}
+
   \bigskip
   
   The most useful is parLapply() function. It is different from clusterApply() because it splits the task into ``equal'' tasks.
@@ -431,7 +456,7 @@ bigsleep <- function(sleeptime, mat) Sys.sleep(sleeptime)
 bigmatrix <- matrix(0, 2000, 2000)
 sleeptime <- rep(1, 100)
 @
-  For the first time let's try \texttt{clusterApply()}.
+  Firstly, let's try \texttt{clusterApply()}.
 \end{frame}
 
 \begin{frame}[fragile]{Example of comparison clusterApply() and parLapply()}
@@ -483,31 +508,62 @@ unlist(clusterCall(cl, runif, 1))
   \frametitle{\texttt{Multicore}  \textit{[deprecated]} : quick look}
   If it is deprecated, why even think about it?
   \pause
-  The Reason is the package \texttt{parallel}. \textit{Wait a little bit...}\\
+  The reason is the package \texttt{parallel}. \textit{Wait a little bit...}\\
   \pause
-  \textit{General Use case}: provides implicit parallelism, main word is {\color{blue} fork} (thus no Windows support).\\
-  \textit{Example}: \texttt{lapply()} runs for ages on your Intel Core i999.\\
-  \textit{Solves}: Single-threaded.\\
-  \textit{Problems}:
-  \begin{itemize}
-    \item No Windows support.
-    \item No internal RNG support.
-    \item Runs only on one computer.
-    \item Cannot be used with \textbf{R} \texttt{GUI}.
-    \item No internal Load Balancing, however, it can be imitated.
-  \end{itemize}
-  {\color{blue} \textit{Warning:} Jobs started by \texttt{multicore} share the same state (because of fork)}.
+  \begin{table}[]
+    \centering
+    \begin{tabular}{rl}
+      \rowcolor{gray!25}
+      \textit{General use case:} & \begin{tabular}{@{}l@{}} main word is {\color{blue} fork} (thus no Windows support), \\ provides {\color{blue} implicit} parallelism \end{tabular} \\
+      \textit{Examples:} & \texttt{lapply()} runs for ages on your Intel Core i999. \\
+      \rowcolor{gray!25}
+      \textit{Solves:} & Single-threaded \\
+      \textit{Problems}: & 
+        \begin{minipage}{4in}
+          \vskip 4pt
+          \begin{itemize}
+            \item No Windows support.
+            \item No internal RNG support.
+            \item Runs only on one computer.
+            \item Cannot be used with \textbf{R} \texttt{GUI}.
+            \item No internal Load Balancing, however, it can be imitated.
+          \end{itemize}
+          \vskip 4pt
+        \end{minipage} \\
+      \pause
+      {\color{blue} \textit{Warning:}} & \begin{tabular}{@{}l@{}} \color{blue} Jobs started by \texttt{multicore} share the same state (because of fork) \end{tabular} 
+    \end{tabular}
+  \end{table}
 \end{frame}
 
 \begin{frame}
   \frametitle{\texttt{Multicore}  \textit{[deprecated]} : quick look}
   We will only consider \textit{high-level} API and let \textit{low-level} to be out-of-scope.
-  \begin{itemize}
-    \item \texttt{mclapply()} --- parallel version of \texttt{lapply()};
-    \item \texttt{mcmapply()} --- parallel version of \texttt{mapply()};
-    \item \texttt{pvec()} --- somewhat an high-level analog of low-level \texttt{clusterSplit()} function; 
-    \item \texttt{parallel()} and \texttt{collect()} --- \texttt{parallel()} creates a new process with \texttt{fork()}, evaluate expression in parallel and after that the result is retrieved by the \texttt{collect()}.
-  \end{itemize}
+  \begin{table}[]
+    \rowcolors{1}{gray!25}{white}
+    \centering
+    \begin{tabular}{ll}
+      \texttt{mclapply()} & parallel version of \texttt{lapply()} \\
+      \begin{tabular}{@{}l@{}}
+        \texttt{mcmapply()}
+      \end{tabular} & 
+      \begin{tabular}{@{}l@{}}
+        parallel version of \texttt{mapply()}
+      \end{tabular} \\
+      \texttt{pvec()} & 
+         \begin{tabular}{@{}l@{}} somewhat an high-level analog of \\ low-level \texttt{clusterSplit()} function \end{tabular} \\
+      \texttt{parallel()} and \texttt{collect()} & 
+         \begin{tabular}{@{}l@{}}
+           \texttt{parallel()} creates a new process with \texttt{fork()}, \\ evaluate expression in parallel and after that \\ the result is retrieved by the \texttt{collect()}
+         \end{tabular}
+    \end{tabular}
+  \end{table}
+%   \begin{itemize}
+%     \item \texttt{mclapply()} --- parallel version of \texttt{lapply()};
+%     \item \texttt{mcmapply()} --- parallel version of \texttt{mapply()};
+%     \item \texttt{pvec()} --- somewhat an high-level analog of low-level \texttt{clusterSplit()} function; 
+%     \item \texttt{parallel()} and \texttt{collect()} --- \texttt{parallel()} creates a new process with \texttt{fork()}, evaluate expression in parallel and after that the result is retrieved by the \texttt{collect()}.
+%  \end{itemize}
 \end{frame}
 
 \begin{frame}{\texttt{Multicore: mclapply}}
@@ -539,8 +595,8 @@ unlist(clusterCall(cl, runif, 1))
     \begin{column}{.48\textwidth}
       Rule of thumb: use
       \begin{itemize}
-        \item TRUE when you don't need load balance (for instance, if there are lot's of values in the data);
-        \item FALSE when the variance of job completion is very high (so, you need load balance).
+        \item TRUE: you don't need load balance (for instance, if there are lot's of values in the data);
+        \item FALSE: the variance of job completion is very high (so, you need load balance).
       \end{itemize}    
     \end{column}
   \end{columns}
@@ -549,18 +605,34 @@ unlist(clusterCall(cl, runif, 1))
 
 \section{parallel}
 \begin{frame}{\texttt{parallel}}
-  \textit{General Use case}: almost a wrapper of \texttt{snow} and \texttt{multicore} packages; main word is {\color{blue} mainstream};\\
-  \textit{Example}: anything above;\\
-  \textit{Solves}: Single-threaded and (partially) memory-bound;\\
-  \textit{Cool features}:
-  \begin{itemize}
-    \item Preinstalled into \textbf{R} since 2.14.0;
-    \item Full RNG support with no dependency on \textit{rlecuyer} package;
-    \item Almost nothing to learn (if you are still awake);
-    \item Can be easily used on any platform including Windows;
-    \item Highly compatible with \texttt{snow} and \texttt{multicore}.
-  \end{itemize}
-  {\color{blue} \textit{Warning:} On Windows you can't use more than one machine. It also can be difficult to configure multiple Linux machines.}
+
+  \begin{table}[]
+    \centering
+    \begin{tabular}{rl}
+      \rowcolor{gray!25}
+      \textit{General use case:} & \begin{tabular}{@{}l@{}} main word is {\color{blue} mainstream}, \\ almost a wrapper of \texttt{snow} and \texttt{multicore} packages \end{tabular} \\
+      \textit{Examples:} & anything above \\
+      \rowcolor{gray!25}
+      \textit{Solves:} & Single-threaded and (partially) memory-bound \\
+      \textit{Cool features}: & 
+        \begin{minipage}{4in}
+          \vskip 4pt
+          \begin{itemize}
+            \item Preinstalled into \textbf{R} since 2.14.0;
+            \item Full RNG support with no dependency on \textit{rlecuyer} package;
+            \item Almost nothing to learn (if you are still awake);
+            \item Can be easily used on any platform including Windows;
+            \item Highly compatible with \texttt{snow} and \texttt{multicore}.
+          \end{itemize}
+          \vskip 4pt
+        \end{minipage} \\
+      \pause
+      {\color{blue} \textit{Warning:}} & 
+        \begin{tabular}{@{}l@{}} 
+          \color{blue} On Windows you can't use more than one machine. \\ \color{blue} It also can be difficult to configure multiple Linux machines. 
+        \end{tabular} 
+    \end{tabular}
+  \end{table}
 \end{frame}
 
 \begin{frame}[fragile]{\texttt{parallel : detectCores()}}
@@ -573,7 +645,7 @@ library(parallel)
 mc.cores <- detectCores()
 mc.cores
 @
-  {\color{blue} \textit{Warning:} It is important to take into account that you can have hyper-threading.}
+  {\color{blue} \textit{Warning:} It is important to take into account that you maybe have hyper-threading.}
 \end{frame}
 
 \begin{frame}[fragile]{\texttt{Parallel} RNG}
@@ -605,7 +677,7 @@ stopCluster(cl)
 \end{frame}
 \begin{frame}[fragile]{\texttt{parallel} RNG: reproducible results}
     Basic way to get reproducible results would be \texttt{mc.reset.stream()} --- the parallel random number generator is reinitialized using the current seed
-on the master
+    on the master.
 <<echo=FALSE>>=
 detach("package:snow", character.only=TRUE)
 library(parallel)
@@ -623,7 +695,7 @@ stopCluster(cl)
 @        
 \end{frame}
 
-\begin{frame}{Differences from \texttt{multicore} and \texttt{snow} and new stuff}
+\begin{frame}{Differences from \texttt{multicore} and \texttt{snow}}
   Let's sum up the differences between modern \texttt{parallel} package and his predecessors.
   \begin{columns}[T]
     \begin{column}{.48\textwidth}
@@ -643,6 +715,7 @@ stopCluster(cl)
       \end{itemize}
     \end{column}
   \end{columns}
+  \bigskip
   Also useful \texttt{detectCores()} is added.
 \end{frame}
 
@@ -673,8 +746,13 @@ stopCluster(cl)
           \item \href{http://www.burns-stat.com/documents/books/the-r-inferno/}{The \textbf{R} Inferno} by Patrick Burns
           \item \href{http://r-pkgs.had.co.nz/}{\textbf{R} Packages} by Hadley Wickham
           \item \href{http://cran.r-project.org/doc/manuals/r-release/R-exts.html}{Writing \textbf{R} Extensions}
+          \item \href{http://www.bytemining.com/files/talks/larug/hpc2012/HPC_in_R_rev2012.pdf}{Los Angeles \textbf{R} Users’ Group: Parallelization in \textbf{R}, Revisited} by Ryan R. Rosario
+          \item \href{https://stat.ethz.ch/R-manual/R-devel/library/parallel/doc/parallel.pdf}{Package ‘parallel’ manual}
+          
         \end{itemize}
     \end{column}
+    
+    
   \end{columns}
 \end{frame}
 
