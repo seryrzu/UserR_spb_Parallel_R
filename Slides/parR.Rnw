@@ -1,0 +1,681 @@
+<<r setup, include=FALSE>>=
+knitr::opts_chunk$set(warning=FALSE, messages=FALSE, cache=T)
+@
+
+\PassOptionsToPackage{table}{xcolor}
+\documentclass[aspectratio=169]{beamer}
+
+\mode<presentation>
+{
+  \usetheme{Warsaw}
+  
+}
+
+\usepackage[]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{grffile}
+\usepackage{hyperref}
+\usepackage{beamerthemesplit}
+\definecolor{links}{HTML}{2A1B81}
+\hypersetup{colorlinks,linkcolor=,urlcolor=links}
+%\setsansfont[Ligatures={Common,TeX}]{TeX Gyre Heros}
+
+{\renewcommand{\arraystretch}{1.1}
+
+\AtBeginSection[]
+{
+  \begin{frame}
+    \frametitle{Outline}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+
+\newcommand*\oldmacro{}%
+\let\oldmacro\insertshorttitle%
+\renewcommand*\insertshorttitle{%
+   \oldmacro\hfill%
+   \insertframenumber\,/\,\inserttotalframenumber}
+
+\setbeamertemplate{headline}{}
+\setbeamertemplate{itemize items}[circle]
+\title{Parallel \textbf{R}}
+
+\author [Andrew Bzikadze]{Andrew Bzikadze\\ \texttt{\small{\href{mailto:seryrzu@gmail.com}{seryrzu@gmail.com}}}}
+\institute{Saint Petersburg State University, Russia \\
+           Faculty of Mathematics and Mechanics \\
+           Department of Statistical Modelling}
+\date {
+September 12, 2015
+}
+\begin{document}
+\begin{frame}
+  \titlepage
+\end{frame}
+
+
+\section{Motivation and introduction}
+\begin{frame}
+  \frametitle {Motivation}
+  \begin{columns}[T]
+    \begin{column}{.48\textwidth}
+      Why \textbf{R}? The \textbf{R} language has a lot of advantages:
+      \begin{itemize}
+        \item Open Source;
+        \item Cross-Platform;
+        \item Free;
+        \item Many basic tools;
+        \item \textbf{R} extensions;
+        \item Arguable fast with \textbf{R}-way style and well-implemented \textbf{R} distribution.
+      \end{itemize}
+      
+      \pause
+      
+      Why bother then?
+    \end{column}
+    \pause
+    \begin{column}{.48\textwidth}
+     There are 2 major limitations:
+      \begin{itemize}
+        \item Single-threaded: no out-of-box support of multi-thread calculations;
+        \item Memory-bound: all data should fit in RAM.
+      \end{itemize}
+      
+      \pause
+      
+      \textit{Solution:} {\color{blue} {Parallel Execution.}}
+      How exactly?
+      \begin{itemize}
+        \item Single-threaded: multiple CPU's (and cores);
+        \item Memory-bound: spread data from one computer (master) to several computers (slaves).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Basic Terminology}
+  The two types of parallelism:
+  \begin{itemize}
+    \item \textbf{Implicit} --- the OS abstracts parallelism from the user;
+    \item \textbf{Explicit} --- user controls details of the process.
+  \end{itemize}
+  
+  \vspace{2mm}
+  A \textbf{computer cluster} consists of a set of loosely or tightly connected computers that work together so that, in many respects, 
+  they can be viewed as a single system (Wiki).
+  
+  \vspace{2mm}
+  \textbf{Master/slave} is a model of communication where one device or process has unidirectional control over one or more other devices (Wiki).
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Overview}
+  \begin{columns}[T]
+    \begin{column}{.5\textwidth}
+      \begin{table}[]
+        \begin{tabular}{ll}
+          {\large{\textbf{snow}}} & \\
+          \textit{Usage:} & 
+            \begin{tabular}{@{}l@{}}
+              Explicit parallelism by using \\ clusters (works on Linux, \\ Windows, Mac OS X);
+            \end{tabular} \\
+          \textit{Solves:} & 
+            \begin{tabular}{@{}l@{}}
+              Single-threaded,  memory-bound.
+            \end{tabular} \\
+          & \\
+          & \\
+          \multicolumn{2}{l} 
+            {\large{\textbf{multicore [deprecated]}}} \\
+            \textit{Usage:} & 
+              \begin{tabular}{@{}l@{}}
+                Implicit parallelism by using \\ FORK (doesn't work on \\ Windows);
+              \end{tabular} \\
+          \textit{Solves:} & Single-threaded.
+        \end{tabular}
+      \end{table}    
+    \end{column}
+    
+    \pause
+   
+    \begin{column}{.5\textwidth}
+      \begin{table}[]
+        \begin{tabular}{ll}
+          \multicolumn{2}{l} 
+            {\large{\textbf{parallel [mainstream]}}} \\
+          \textit{Usage:} & 
+            \begin{tabular}{@{}l@{}}
+              Almost a wrapper of \texttt{snow} and \\ \texttt{multicore};
+            \end{tabular} \\
+          \textit{Solves:} & 
+            \begin{tabular}{@{}l@{}}
+              Single-threaded.
+            \end{tabular} \\
+          & \\
+          & \\ 
+          &
+          \pause 
+          \\
+          \multicolumn{2}{l} 
+            {\large{\textbf{hadoop}}} \\
+          \multicolumn{2}{l} 
+            {\textbf{R} + \texttt{Hadoop, RHIPE, Segue}.} \\
+        \end{tabular}
+      \end{table}    
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Epigraph}
+  \begin{quote}
+    ``\ldots R was not built in anticipation of the Big Data revolution.
+    
+    R was born in 1995. Disk space was expensive, RAM even more so, and this thing called
+    The Internet was just getting its legs. Notions of “large-scale data analysis” and “high-performance
+    computing” were reasonably rare. Outside of Wall Street firms and university
+    research labs, there just wasn’t that much data to crunch.''
+  \end{quote}
+  {\hfill --- Q. Ethan McCallum and Stephen Weston ``Parallel \textbf{R}''}
+\end{frame}
+
+
+\begin{frame}{Outline}
+  \tableofcontents%[pausesections]
+  % You might wish to add the option [pausesections]
+\end{frame}
+\section{snow}
+\begin{frame}[fragile]
+    \frametitle{\texttt{snow}: quick look}
+<<echo=FALSE>>=
+  library("snow")
+@
+    \begin{table}[]
+      \rowcolors{1}{gray!25}{white}
+      \centering
+      \begin{tabular}{rl}
+        \textit{General use case:} & main word is {\color{blue} cluster}, provides {\color{blue} explicit} parallelism; \\
+        \textit{Examples:} & \begin{tabular}{@{}l@{}}Monte Carlo simulations, bootstrapping, cross validation, \\ensemble machine learning algorithms; \end{tabular} \\
+        \textit{Solves:} & Single-threaded, memory-bound; \\
+        \textit{Cool features}: & 
+          \begin{minipage}{4in}
+            \vskip 4pt
+            \begin{itemize}
+              \item Different transport mechanisms between Master and Slaves: Sockets, MPI (\texttt {rmpi}), NWS (\texttt{nws}), PVM (\texttt{rpvm});
+              \item Good support of RNG (\texttt{rsprng}, \texttt{rlecuyer});
+            \end{itemize}
+            \vskip 4pt
+          \end{minipage} \\
+        \textit{Problems:} & No communication between the workers (slaves); \\
+        \pause
+        {\color{blue} \textit{Warning:}} & \begin{tabular}{@{}l@{}} \color{blue} The input arguments \textbf{must fit} into memory when calling\\ \color{blue} \texttt{snow} function. 
+        It’s up to the user to
+        arrange high-performance \\ \color{blue} distributed file systems. \end{tabular}
+      \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Structure of API}
+%     \begin{itemize}
+%       \item \textit{Start and stop clusters}: makeCluster, stopCluster;
+%       \item \textit{Low-level (cluster-level) functions}: \texttt{cluster*} --- \texttt{clusterApply}, \texttt{clusterApplyLB}, \texttt{clusterEvalQ}, 
+%             \textit{clusterCall}, \texttt{clusterSplit}, etc\ldots;
+%       \item \textit{High-level functions}: \texttt{par[L,S,A,R,C]apply} --- parallel versions of apply and related functions;
+%       \item \textit{(Uniform) RNG}: L`Ecuyer (pack: \texttt{rlecuyer}), SPRNG \textit{[deprecated]} (package: \texttt{rsprng});
+%       \item \textit{Timing}: \texttt{snow.time(expr)} -- very useful.
+%     \end{itemize}
+    \begin{table}[]
+      \rowcolors{1}{gray!25}{white}
+      \centering
+      \begin{tabular}{rl}
+        \textit{Start and stop clusters:} & makeCluster, stopCluster; \\
+        \textit{Low-level (cluster-level) functions:} & 
+          \begin{tabular}{@{}l@{}}
+            \texttt{cluster*} --- \texttt{clusterApply}, \texttt{clusterApplyLB},\\ \texttt{clusterEvalQ}, 
+            \texttt{clusterCall}, \texttt{clusterSplit}, etc;
+          \end{tabular} \\
+        \textit{High-level functions:} &
+          \begin{tabular}{@{}l@{}}
+              \texttt{par[L,S,A,R,C]apply} --- parallel versions of\\ apply and related functions;
+          \end{tabular} \\
+        \textit{(Uniform) RNG:} &
+          \begin{tabular}{@{}l@{}}
+              L`Ecuyer (package: \texttt{rlecuyer}), \\ SPRNG \textit{[deprecated]} (package: \texttt{rsprng});
+          \end{tabular} \\
+        \textit{Timing}: & \texttt{snow.time(expr)} --- very useful.
+      \end{tabular}
+    \end{table}
+\end{frame}
+
+
+\begin{frame}[fragile]
+    \frametitle{Start and stop clusters}
+    
+    Basic way:
+<<>>=
+  cl <- makeCluster(8, type = "SOCK") # or you may use 
+                                      # makeSOCKcluster(), 
+                                      # makePVMcluster(), etc.
+  stopCluster(cl)
+@
+
+  First parameter is \texttt{spec} --- specification. It is \texttt{ssh}-configurable unless you type \texttt{"localhost"}:
+  
+  
+<<>>=
+  cl <- makeCluster(c("localhost","localhost"), type = "SOCK")
+  stopCluster(cl)
+@
+
+{\color{blue} \textit{Warning:} Be aware of computational costs of cluster setup.}
+\end{frame}
+
+\begin{frame}{Low-level API}
+  All of them are \texttt{cluster*} and designed for computing {\color{blue} \textit{on}} a cluster. Most interesting are as follows.
+%   \begin{itemize}
+%     \item \texttt{clusterApply(cl, x, fun, ...)} --- jobs are being ``recycled''.
+%     \item \texttt{clusterApplyLB(cl, x, fun, ...)} --- Load Balancing version of clusterApply().
+%     \item \texttt{clusterCall(cl, fun, ...)} --- calls a function fun with identical arguments ... on each node in the cluster cl and returns a list of the results.
+%     \item \texttt{clusterEvalQ(cl, expr)} --- evaluates an expression expr on each node in the cluster cl; implemented using clusterCall();
+%     \item \texttt{clusterMap(cl, fun, ..., MoreArgs = NULL, RECYCLE = TRUE)} --- similar to \texttt{mapply}.
+%   \end{itemize} 
+  \begin{table}[]
+    \rowcolors{1}{gray!25}{white}
+    \centering
+    \begin{tabular}{ll}
+      \texttt{clusterApply(cl, x, fun, ...)} & jobs are being ``recycled'' \\
+      \texttt{clusterApplyLB(cl, x, fun, ...)} & Load Balancing version of clusterApply() \\
+       \texttt{clusterCall(cl, fun, ...)} & 
+         \begin{tabular}{@{}l@{}}
+           calls a function fun with identical \\ arguments ... on each node in the cluster cl \\ and returns a list of the results
+         \end{tabular} \\
+       \texttt{clusterEvalQ(cl, expr)} & 
+         \begin{tabular}{@{}l@{}}
+           evaluates an expression expr on each node\\ in the cluster cl; \\ implemented using clusterCall()
+         \end{tabular} \\
+       \begin{tabular}{@{}l@{}}
+          \texttt{clusterMap(cl, fun, ...,}\\ \quad \texttt{MoreArgs = NULL, RECYCLE = TRUE)}
+        \end{tabular}
+        & similar to \texttt{mapply}
+    \end{tabular}
+  \end{table}
+\end{frame}
+
+\begin{frame}[fragile]{Example, K-means}
+<<echo=FALSE>>=
+  cl <- makeCluster(8, type = "SOCK")
+@
+
+  \begin{columns}[T]
+    \begin{column}{.48\textwidth}
+      Basic one-core way:
+<<size="scriptsize">>=
+library(MASS)
+result <- kmeans(Boston, 4, 
+                 nstart=100)
+@
+      \pause
+      Before using \texttt{snow} it is easier to think \texttt{*apply}-way:
+<<size="scriptsize">>=
+results <- lapply(rep(25, 4), 
+  function(nstart) 
+    kmeans(Boston, 4, nstart=nstart)
+)
+i <- sapply(results, 
+  function(result) 
+    result$tot.withinss
+)
+result <- results[[which.min(i)]]
+@
+
+    \end{column}
+    \begin{column}{.48\textwidth}
+    \pause
+    Finally \texttt{snow} version.
+<<size="scriptsize">>=
+ignore <- 
+  clusterEvalQ(cl, {library(MASS); NULL})
+results <- 
+  clusterApply(cl, rep(25, 4), 
+    function(nstart) 
+      kmeans(Boston, 4, nstart=nstart)
+)
+i <- sapply(results, 
+  function(result) 
+    result$tot.withinss
+)
+result <- results[[which.min(i)]]
+@
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Load Balancing}
+
+\texttt{clusterApply()} uses a \textit{robin-round} fashion for scheduling tasks for clusters. 
+It means one time for every cluster. It could be not very wise to do that.
+<<echo=FALSE>>=
+library("snow")
+cl <- makeCluster(4, type="SOCK")
+@
+
+<<size="scriptsize">>=
+set.seed(123)
+sleeptime <- abs(rnorm(10, 10, 10))
+tm <- snow.time(clusterApply(cl, sleeptime, Sys.sleep))
+@
+\end{frame}
+
+\begin{frame}[fragile]{Load Balancing}
+<<size = 'tiny', fig.width=8, fig.height=5, out.width='.89\\linewidth', echo=FALSE>>=
+plot(tm)
+@    
+\end{frame}
+
+\begin{frame}[fragile]{Load Balancing}
+
+So we waited for more than 50 seconds. 
+A more efficient way would be pull the tasks to clusters when they are needed.
+This technique is called ``load balancing''. Function clusterApplyLB() uses that technique.
+<<echo=FALSE>>=
+library("snow")
+cl <- makeCluster(4, type="SOCK")
+@
+
+<<size="scriptsize">>=
+set.seed(123)
+sleeptime <- abs(rnorm(10, 10, 10))
+tm <- snow.time(clusterApplyLB(cl, sleeptime, Sys.sleep))
+@
+\end{frame}
+
+\begin{frame}[fragile]{Load Balancing}
+<<size = 'tiny', fig.width=8, fig.height=5, out.width='.89\\linewidth', echo=FALSE>>=
+plot(tm)
+@    
+\end{frame}
+
+\begin{frame}{Load Balancing}
+  So, here we waited for about 30 seconds. This is an improvement. The only wasted time was at the end. 
+\end{frame}
+
+\begin{frame}[fragile]{High-level API}
+  \begin{itemize}
+    \item parLapply(cl, x, fun, \ldots) --- parallel version of lapply()
+    \item parSapply(cl, X, FUN, \ldots, simplify = TRUE, USE.NAMES = TRUE) --- parallel version of sapply()
+    \item parApply(cl, X, MARGIN, FUN, \ldots) --- parallel version of apply()
+    \item parRapply(cl, x, fun, \ldots) --- row apply() for matrix
+    \item parCapply(cl, x, fun, \ldots) --- col apply() for matrix.
+  \end{itemize}
+  
+  \bigskip
+  
+  The most useful is parLapply() function. It is different from clusterApply() because it splits the task into ``equal'' tasks.
+<<size='scriptsize'>>=
+parLapply
+@
+where splitList() is an internal snow function. 
+\end{frame}
+
+\begin{frame}[fragile]{Example of comparison clusterApply() and parLapply()}
+  \texttt{parLapply()} could be more efficient if you have more tasks than workers.
+  Another situation --- you send large arguments to \texttt{parLapply()}.
+  Let's take a look at the example.
+<<size='scriptsize'>>=
+bigsleep <- function(sleeptime, mat) Sys.sleep(sleeptime)
+bigmatrix <- matrix(0, 2000, 2000)
+sleeptime <- rep(1, 100)
+@
+  For the first time let's try \texttt{clusterApply()}.
+\end{frame}
+
+\begin{frame}[fragile]{Example of comparison clusterApply() and parLapply()}
+<<size = 'tiny', fig.width=10, fig.height=5, out.width='.89\\linewidth', echo=FALSE>>=
+tm <- snow.time(clusterApply(cl, sleeptime, bigsleep, bigmatrix))
+plot(tm)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Example of comparison \texttt{clusterApply()} and \texttt{parLapply()}}
+  Definitely not highly efficient. Those gaps are due to I/O time.
+  Ideally we should have 25 seconds... Let's give \texttt{parApply()} a try.
+\end{frame}
+
+\begin{frame}[fragile]{Example of comparison clusterApply() and parLapply()}
+<<size = 'tiny', fig.width=10, fig.height=5, out.width='.89\\linewidth', echo=FALSE>>=
+tm <- snow.time(parLapply(cl, sleeptime, bigsleep, bigmatrix))
+plot(tm)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Load Balancing parLapply?}
+  \pause
+  Short answer: no, there is no such a function in snow package. \\
+  Good news: it is possible to write your own.
+\end{frame}
+
+\begin{frame}[fragile]{Random Number Generation}
+  There are 2 basic steps.\\
+  \begin{enumerate}
+    \item Configure your cluster workers to use a generator.
+<<bl1, size='scriptsize'>>=
+library(rlecuyer)
+clusterSetupRNG(cl, type = 'RNGstream') 
+@
+
+    \item Be happy to generate your numbers.
+<<bl2, size='scriptsize'>>=
+unlist(clusterCall(cl, runif, 1))
+@    
+
+  \end{enumerate}
+\end{frame}
+
+
+\section{multicore}
+\begin{frame}
+  \frametitle{\texttt{Multicore}  \textit{[deprecated]} : quick look}
+  If it is deprecated, why even think about it?
+  \pause
+  The Reason is the package \texttt{parallel}. \textit{Wait a little bit...}\\
+  \pause
+  \textit{General Use case}: provides implicit parallelism, main word is {\color{blue} fork} (thus no Windows support).\\
+  \textit{Example}: \texttt{lapply()} runs for ages on your Intel Core i999.\\
+  \textit{Solves}: Single-threaded.\\
+  \textit{Problems}:
+  \begin{itemize}
+    \item No Windows support.
+    \item No internal RNG support.
+    \item Runs only on one computer.
+    \item Cannot be used with \textbf{R} \texttt{GUI}.
+    \item No internal Load Balancing, however, it can be imitated.
+  \end{itemize}
+  {\color{blue} \textit{Warning:} Jobs started by \texttt{multicore} share the same state (because of fork)}.
+\end{frame}
+
+\begin{frame}
+  \frametitle{\texttt{Multicore}  \textit{[deprecated]} : quick look}
+  We will only consider \textit{high-level} API and let \textit{low-level} to be out-of-scope.
+  \begin{itemize}
+    \item \texttt{mclapply()} --- parallel version of \texttt{lapply()};
+    \item \texttt{mcmapply()} --- parallel version of \texttt{mapply()};
+    \item \texttt{pvec()} --- somewhat an high-level analog of low-level \texttt{clusterSplit()} function; 
+    \item \texttt{parallel()} and \texttt{collect()} --- \texttt{parallel()} creates a new process with \texttt{fork()}, evaluate expression in parallel and after that the result is retrieved by the \texttt{collect()}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\texttt{Multicore: mclapply}}
+  \texttt{mclapply()} is a parallel \texttt{lapply}.\\
+  \bigskip
+  Syntax is as follows:\\
+  \texttt{mclapply(X, FUN, ..., \\
+         \quad mc.preschedule = TRUE, mc.set.seed = TRUE,\\
+         \quad mc.silent = FALSE, mc.cores = getOption("mc.cores"))} \\
+  where \\
+  \begin{enumerate}
+    \item \texttt{mc.preschedule = TRUE} --- how jobs are created for \texttt{X};
+    \item \texttt{mc.set.seed = TRUE} --- do you need to randomly seed slaves, or fork it?
+    \item \texttt{mc.silent = FALSE} --- info from `stdout' for all parallel forked processes? `stderr' is not affected;
+    \item \texttt{mc.cores == getOption("mc.cores")} --- number of \textbf{workers} (not cores, actually) to start;
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{\texttt{Multicore: mclapply, mc.preschedule}}
+  \begin{columns}[T]
+    \begin{column}{.48\textwidth}
+      Meaning:
+      \begin{itemize}
+        \item TRUE: divide data in \texttt{mc.cores}-jobs beforehand and fork it to \texttt{mc.cores}-processes;
+        \item FALSE: for each piece of data construct a new job (up to \texttt{mc.cores}).
+      \end{itemize}
+    \end{column}
+    \pause
+    \begin{column}{.48\textwidth}
+      Rule of thumb: use
+      \begin{itemize}
+        \item TRUE when you don't need load balance (for instance, if there are lot's of values in the data);
+        \item FALSE when the variance of job completion is very high (so, you need load balance).
+      \end{itemize}    
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\section{parallel}
+\begin{frame}{\texttt{parallel}}
+  \textit{General Use case}: almost a wrapper of \texttt{snow} and \texttt{multicore} packages; main word is {\color{blue} mainstream};\\
+  \textit{Example}: anything above;\\
+  \textit{Solves}: Single-threaded and (partially) memory-bound;\\
+  \textit{Cool features}:
+  \begin{itemize}
+    \item Preinstalled into \textbf{R} since 2.14.0;
+    \item Full RNG support with no dependency on \textit{rlecuyer} package;
+    \item Almost nothing to learn (if you are still awake);
+    \item Can be easily used on any platform including Windows;
+    \item Highly compatible with \texttt{snow} and \texttt{multicore}.
+  \end{itemize}
+  {\color{blue} \textit{Warning:} On Windows you can't use more than one machine. It also can be difficult to configure multiple Linux machines.}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{parallel : detectCores()}}
+  How many cores?
+<<echo=FALSE, include=FALSE>>=
+library(parallel)
+@
+<<>>=
+library(parallel)
+mc.cores <- detectCores()
+mc.cores
+@
+  {\color{blue} \textit{Warning:} It is important to take into account that you can have hyper-threading.}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{Parallel} RNG}
+  Unlike \texttt{snow} package no additional packages (like \texttt{rlecuyer}) are needed.
+  \begin{columns}[T]
+    \begin{column}{.48\textwidth}
+        Fork (no Windows) way:
+<<echo=FALSE, include=FALSE>>=
+library(parallel)
+@
+<<size='scriptsize'>>=
+RNGkind("L'Ecuyer-CMRG")
+unlist(mclapply(rep(1,4), runif))
+@        
+    \end{column}
+    \begin{column}{.48\textwidth}
+        Cluster way:
+<<size='scriptsize'>>=
+detach("package:snow", character.only=TRUE)
+library(parallel)
+RNGkind("L'Ecuyer-CMRG")
+cl <- makeCluster(2, type="PSOCK")
+unlist(clusterCall(cl, function(x) runif(2)))
+stopCluster(cl)
+@
+
+    \end{column}
+  \end{columns}
+\end{frame}
+\begin{frame}[fragile]{\texttt{parallel} RNG: reproducible results}
+    Basic way to get reproducible results would be \texttt{mc.reset.stream()} --- the parallel random number generator is reinitialized using the current seed
+on the master
+<<echo=FALSE>>=
+detach("package:snow", character.only=TRUE)
+library(parallel)
+@  
+<<size='scriptsize'>>=
+detach("package:snow", character.only=TRUE)
+library(parallel)
+RNGkind("L'Ecuyer-CMRG")
+cl <- makeCluster(2, type="PSOCK")
+clusterSetRNGStream(cl, 123)
+unlist(clusterCall(cl, function(x) runif(2)))
+clusterSetRNGStream(cl, 123)
+unlist(clusterCall(cl, function(x) runif(2)))
+stopCluster(cl)
+@        
+\end{frame}
+
+\begin{frame}{Differences from \texttt{multicore} and \texttt{snow} and new stuff}
+  Let's sum up the differences between modern \texttt{parallel} package and his predecessors.
+  \begin{columns}[T]
+    \begin{column}{.48\textwidth}
+      \texttt{parallel} $>$ \texttt{multicore}
+      \begin{itemize}
+        \item Prefix \texttt{mc} in \texttt{mcfork()}, \texttt{mcexit()}, \texttt{mckill()}, \texttt{mcparallel()}, \texttt{mccollect()}, \texttt{mc.cores};
+        \item Different default value of \texttt{mc.cores} argument;
+        \item New mc.reset.stream() function.
+      \end{itemize}
+    \end{column}
+    \begin{column}{.48\textwidth}
+      \texttt{parallel} $\neq$ \texttt{snow}
+      \begin{itemize}
+        \item New function \texttt{clusterSetRNGStream()} initializes parallel RNG;
+        \item \texttt{snow.time()} function not included;
+        \item \texttt{makeCluster()} supports additional types “FORK”.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  Also useful \texttt{detectCores()} is added.
+\end{frame}
+
+\section{What else and references}
+
+\begin{frame}{Out of scope}
+  We covered 3 (2.5 really) packages: \texttt{snow}, \texttt{multicore}, \texttt{parallel}. What else?
+  \begin{itemize}
+    \item \textit{Revolution Analytics} \texttt{foreach} package for iteration over a set of values;
+    \item MapReduce via Java Hadoop: \texttt{RHIPE} (negotiator between you with your MapReduce functions and Hadoop);
+    \item \texttt{Segue} for Amazon Elastic MapReduce lovers; {\color{blue} Be aware of terminating clusters.};
+    \item \texttt{doRedis} 
+    \item \url{http://cloudNumbers.com}
+    \item \textbf{R} and GPUs: \texttt{gputools} etc\ldots
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Literature}
+  \begin{columns}[T]
+    \begin{column}{.48\textwidth}
+        Main reference: \\
+        \includegraphics*[height=.8\textheight]{figure/Parallel_R.jpg} 
+    \end{column}
+    \begin{column}{.48\textwidth}
+        \textbf{Useful links:}
+        \begin{itemize}
+          \item \href{http://adv-r.had.co.nz/}{Advanced \textbf{R}} by Hadley Wickham
+          \item \href{http://www.burns-stat.com/documents/books/the-r-inferno/}{The \textbf{R} Inferno} by Patrick Burns
+          \item \href{http://r-pkgs.had.co.nz/}{\textbf{R} Packages} by Hadley Wickham
+          \item \href{http://cran.r-project.org/doc/manuals/r-release/R-exts.html}{Writing \textbf{R} Extensions}
+        \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\end{document}
