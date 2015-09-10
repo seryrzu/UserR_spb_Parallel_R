@@ -1,0 +1,29 @@
+\frametitle{\texttt {parallel} RNG: reproducible results}
+Basic way to get reproducible results would be \texttt{mc.reset.stream()} --- the parallel random number generator is reinitialized using the current seed
+    on the master.
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{detach}\hlstd{(}\hlstr{"package:snow"}\hlstd{,} \hlkwc{character.only}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+\hlkwd{library}\hlstd{(parallel)}
+\hlkwd{RNGkind}\hlstd{(}\hlstr{"L'Ecuyer-CMRG"}\hlstd{)}
+\hlstd{cl} \hlkwb{<-} \hlkwd{makeCluster}\hlstd{(}\hlnum{2}\hlstd{,} \hlkwc{type}\hlstd{=}\hlstr{"PSOCK"}\hlstd{)}
+\hlkwd{clusterSetRNGStream}\hlstd{(cl,} \hlnum{123}\hlstd{)}
+\hlkwd{unlist}\hlstd{(}\hlkwd{clusterCall}\hlstd{(cl,} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{runif}\hlstd{(}\hlnum{2}\hlstd{)))}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.1663742 0.3898457 0.3411064 0.9712727
+\end{verbatim}
+\begin{alltt}
+\hlkwd{clusterSetRNGStream}\hlstd{(cl,} \hlnum{123}\hlstd{)}
+\hlkwd{unlist}\hlstd{(}\hlkwd{clusterCall}\hlstd{(cl,} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{runif}\hlstd{(}\hlnum{2}\hlstd{)))}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.1663742 0.3898457 0.3411064 0.9712727
+\end{verbatim}
+\begin{alltt}
+\hlkwd{stopCluster}\hlstd{(cl)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
