@@ -1,7 +1,0 @@
-\beamer@endinputifotherversion {3.24pt}
-\select@language {english}
-\beamer@sectionintoc {1}{Motivation and introduction}{2}{0}{1}
-\beamer@sectionintoc {2}{snow}{13}{0}{2}
-\beamer@sectionintoc {3}{multicore}{35}{0}{3}
-\beamer@sectionintoc {4}{parallel}{44}{0}{4}
-\beamer@sectionintoc {5}{What else and references}{51}{0}{5}
