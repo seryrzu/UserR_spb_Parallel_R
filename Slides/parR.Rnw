@@ -269,7 +269,7 @@ September 12, 2015
   First parameter is \texttt{spec} --- specification. It is \texttt{ssh}-configurable unless you type \texttt{"localhost"}:
   
   
-<<,background="white"
+<<background="white">>=
   cl <- makeCluster(c("localhost","localhost"), type = "SOCK")
   stopCluster(cl)
 @
