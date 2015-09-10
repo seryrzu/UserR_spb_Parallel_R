@@ -1,9 +1,56 @@
-<<r setup, include=FALSE>>=
-knitr::opts_chunk$set(warning=FALSE, messages=FALSE, cache=T)
-@
+
 
 \PassOptionsToPackage{table}{xcolor}
-\documentclass[aspectratio=169]{beamer}
+\documentclass[aspectratio=169]{beamer}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
 
 \mode<presentation>
 {
@@ -52,6 +99,7 @@ knitr::opts_chunk$set(warning=FALSE, messages=FALSE, cache=T)
 \date {
 September 12, 2015
 }
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
 \begin{frame}
   \titlepage
@@ -193,9 +241,7 @@ September 12, 2015
 \section{snow}
 \begin{frame}[fragile]
     \frametitle{\texttt{snow}: quick look}
-<<echo=FALSE>>=
-  library("snow")
-@
+
     \begin{table}[]
       \rowcolors{1}{gray!25}{white}
       \centering
@@ -259,12 +305,16 @@ September 12, 2015
     \frametitle{Start and stop clusters}
     
     Basic way:
-<<background="white">>=
-  cl <- makeCluster(8, type = "SOCK") # or you may use 
-                                      # makeSOCKcluster(), 
-                                      # makePVMcluster(), etc.
-  stopCluster(cl)
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+  \hlstd{cl} \hlkwb{<-} \hlkwd{makeCluster}\hlstd{(}\hlnum{8}\hlstd{,} \hlkwc{type} \hlstd{=} \hlstr{"SOCK"}\hlstd{)} \hlcom{# or you may use }
+                                      \hlcom{# makeSOCKcluster(), }
+                                      \hlcom{# makePVMcluster(), etc.}
+  \hlkwd{stopCluster}\hlstd{(cl)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
   First parameter is \texttt{spec} --- specification. It is \texttt{ssh}-configurable unless you type \texttt{"localhost"}:
   
@@ -309,50 +359,60 @@ September 12, 2015
 \end{frame}
 
 \begin{frame}[fragile]{Example, K-means}
-<<echo=FALSE,background="white">>=
-  cl <- makeCluster(8, type = "SOCK")
-@
+
 
   \begin{columns}[T]
     \begin{column}{.48\textwidth}
       Basic one-core way:
-<<size="scriptsize",background="white">>=
-library(MASS)
-result <- kmeans(Boston, 4, 
-                 nstart=100)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(MASS)}
+\hlstd{result} \hlkwb{<-} \hlkwd{kmeans}\hlstd{(Boston,} \hlnum{4}\hlstd{,}
+                 \hlkwc{nstart}\hlstd{=}\hlnum{100}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
       \pause
       Before using \texttt{snow} it is easier to think \texttt{*apply}-way:
-<<size="scriptsize",background="white">>=
-results <- lapply(rep(25, 4), 
-  function(nstart) 
-    kmeans(Boston, 4, nstart=nstart)
-  )
-i <- sapply(results, 
-  function(result) 
-    result$tot.withinss
-  )
-result <- results[[which.min(i)]]
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{results} \hlkwb{<-} \hlkwd{lapply}\hlstd{(}\hlkwd{rep}\hlstd{(}\hlnum{25}\hlstd{,} \hlnum{4}\hlstd{),}
+  \hlkwa{function}\hlstd{(}\hlkwc{nstart}\hlstd{)}
+    \hlkwd{kmeans}\hlstd{(Boston,} \hlnum{4}\hlstd{,} \hlkwc{nstart}\hlstd{=nstart)}
+  \hlstd{)}
+\hlstd{i} \hlkwb{<-} \hlkwd{sapply}\hlstd{(results,}
+  \hlkwa{function}\hlstd{(}\hlkwc{result}\hlstd{)}
+    \hlstd{result}\hlopt{$}\hlstd{tot.withinss}
+  \hlstd{)}
+\hlstd{result} \hlkwb{<-} \hlstd{results[[}\hlkwd{which.min}\hlstd{(i)]]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
     \end{column}
     \begin{column}{.48\textwidth}
     \pause
     Finally \texttt{snow} version.
-<<size="scriptsize",background="white">>=
-ignore <- 
-  clusterEvalQ(cl, {library(MASS); NULL})
-results <- 
-  clusterApply(cl, rep(25, 4), 
-    function(nstart) 
-      kmeans(Boston, 4, nstart=nstart)
-  )
-i <- sapply(results, 
-  function(result) 
-    result$tot.withinss
-  )
-result <- results[[which.min(i)]]
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{ignore} \hlkwb{<-}
+  \hlkwd{clusterEvalQ}\hlstd{(cl, \{}\hlkwd{library}\hlstd{(MASS);} \hlkwa{NULL}\hlstd{\})}
+\hlstd{results} \hlkwb{<-}
+  \hlkwd{clusterApply}\hlstd{(cl,} \hlkwd{rep}\hlstd{(}\hlnum{25}\hlstd{,} \hlnum{4}\hlstd{),}
+    \hlkwa{function}\hlstd{(}\hlkwc{nstart}\hlstd{)}
+      \hlkwd{kmeans}\hlstd{(Boston,} \hlnum{4}\hlstd{,} \hlkwc{nstart}\hlstd{=nstart)}
+  \hlstd{)}
+\hlstd{i} \hlkwb{<-} \hlkwd{sapply}\hlstd{(results,}
+  \hlkwa{function}\hlstd{(}\hlkwc{result}\hlstd{)}
+    \hlstd{result}\hlopt{$}\hlstd{tot.withinss}
+  \hlstd{)}
+\hlstd{result} \hlkwb{<-} \hlstd{results[[}\hlkwd{which.min}\hlstd{(i)]]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
     \end{column}
   \end{columns}
 \end{frame}
@@ -361,22 +421,25 @@ result <- results[[which.min(i)]]
 
 \texttt{clusterApply()} uses a \textit{robin-round} fashion for scheduling tasks for clusters. 
 It means one time for every cluster. It could be not very wise to do that.
-<<echo=FALSE,background="white">>=
-library("snow")
-cl <- makeCluster(4, type="SOCK")
-@
 
-<<size="scriptsize",background="white">>=
-set.seed(123)
-sleeptime <- abs(rnorm(10, 10, 10))
-tm <- snow.time(clusterApply(cl, sleeptime, Sys.sleep))
-@
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{123}\hlstd{)}
+\hlstd{sleeptime} \hlkwb{<-} \hlkwd{abs}\hlstd{(}\hlkwd{rnorm}\hlstd{(}\hlnum{10}\hlstd{,} \hlnum{10}\hlstd{,} \hlnum{10}\hlstd{))}
+\hlstd{tm} \hlkwb{<-} \hlkwd{snow.time}\hlstd{(}\hlkwd{clusterApply}\hlstd{(cl, sleeptime, Sys.sleep))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 \end{frame}
 
 \begin{frame}[fragile]{Load Balancing}
-<<size = 'tiny', fig.width=8, fig.height=5, out.width='.89\\linewidth', echo=FALSE,background="white">>=
-plot(tm)
-@    
+\begin{knitrout}\tiny
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}
+\includegraphics[width=.89\linewidth]{figure/unnamed-chunk-9-1} 
+
+\end{knitrout}
 \end{frame}
 
 \begin{frame}[fragile]{Load Balancing}
@@ -384,22 +447,25 @@ plot(tm)
 So we waited for more than 50 seconds. 
 A more efficient way would be pull the tasks to clusters when they are needed.
 This technique is called {\color{blue} ``load balancing''}. Function \texttt{clusterApplyLB()} uses that technique.
-<<echo=FALSE,background="white">>=
-library("snow")
-cl <- makeCluster(4, type="SOCK")
-@
 
-<<size="scriptsize",background="white">>=
-set.seed(123)
-sleeptime <- abs(rnorm(10, 10, 10))
-tm <- snow.time(clusterApplyLB(cl, sleeptime, Sys.sleep))
-@
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{123}\hlstd{)}
+\hlstd{sleeptime} \hlkwb{<-} \hlkwd{abs}\hlstd{(}\hlkwd{rnorm}\hlstd{(}\hlnum{10}\hlstd{,} \hlnum{10}\hlstd{,} \hlnum{10}\hlstd{))}
+\hlstd{tm} \hlkwb{<-} \hlkwd{snow.time}\hlstd{(}\hlkwd{clusterApplyLB}\hlstd{(cl, sleeptime, Sys.sleep))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 \end{frame}
 
 \begin{frame}[fragile]{Load Balancing}
-<<size = 'tiny', fig.width=8, fig.height=5, out.width='.89\\linewidth', echo=FALSE,background="white">>=
-plot(tm)
-@    
+\begin{knitrout}\tiny
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}
+\includegraphics[width=.89\linewidth]{figure/unnamed-chunk-12-1} 
+
+\end{knitrout}
 \end{frame}
 
 \begin{frame}{Load Balancing}
@@ -443,9 +509,19 @@ plot(tm)
   \bigskip
   
   The most useful is \texttt{parLapply()} function. It is different from \texttt{clusterApply()} because it splits the task into ``equal'' tasks.
-<<size='scriptsize',background="white">>=
-parLapply
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{parLapply}
+\end{alltt}
+\begin{verbatim}
+## function (cl, x, fun, ...) 
+## docall(c, clusterApply(cl, splitList(x, length(cl)), lapply, 
+##     fun, ...))
+## <environment: namespace:snow>
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 where \texttt{splitList()} is an internal snow function. 
 \end{frame}
 
@@ -453,19 +529,24 @@ where \texttt{splitList()} is an internal snow function.
   \texttt{parLapply()} could be more efficient if you have more tasks than workers.
   Another situation --- you send large arguments to \texttt{parLapply()}.
   Let's take a look at the example.
-<<size='scriptsize',background="white">>=
-bigsleep <- function(sleeptime, mat) Sys.sleep(sleeptime)
-bigmatrix <- matrix(0, 2000, 2000)
-sleeptime <- rep(1, 100)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{bigsleep} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{sleeptime}\hlstd{,} \hlkwc{mat}\hlstd{)} \hlkwd{Sys.sleep}\hlstd{(sleeptime)}
+\hlstd{bigmatrix} \hlkwb{<-} \hlkwd{matrix}\hlstd{(}\hlnum{0}\hlstd{,} \hlnum{2000}\hlstd{,} \hlnum{2000}\hlstd{)}
+\hlstd{sleeptime} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{100}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
   Firstly, let's try \texttt{clusterApply()}.
 \end{frame}
 
 \begin{frame}[fragile]{Example of comparison \texttt{clusterApply()} and \texttt{parLapply()}}
-<<size = 'tiny', fig.width=10, fig.height=5, out.width='.89\\linewidth', echo=FALSE,background="white">>=
-tm <- snow.time(clusterApply(cl, sleeptime, bigsleep, bigmatrix))
-plot(tm)
-@
+\begin{knitrout}\tiny
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}
+\includegraphics[width=.89\linewidth]{figure/unnamed-chunk-15-1} 
+
+\end{knitrout}
 \end{frame}
 
 \begin{frame}[fragile]{Example of comparison \texttt{clusterApply()} and \texttt{parLapply()}}
@@ -474,10 +555,11 @@ plot(tm)
 \end{frame}
 
 \begin{frame}[fragile]{Example of comparison \texttt{clusterApply()} and \texttt{parLapply()}}
-<<size = 'tiny', fig.width=10, fig.height=5, out.width='.89\\linewidth', echo=FALSE,background="white">>=
-tm <- snow.time(parLapply(cl, sleeptime, bigsleep, bigmatrix))
-plot(tm)
-@
+\begin{knitrout}\tiny
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}
+\includegraphics[width=.89\linewidth]{figure/unnamed-chunk-16-1} 
+
+\end{knitrout}
 
 \end{frame}
 
@@ -491,15 +573,29 @@ plot(tm)
   There are 2 basic steps.\\
   \begin{enumerate}
     \item Configure your cluster workers to use a generator.
-<<bl1, size='scriptsize',background="white">>=
-library(rlecuyer)
-clusterSetupRNG(cl, type = 'RNGstream') 
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(rlecuyer)}
+\hlkwd{clusterSetupRNG}\hlstd{(cl,} \hlkwc{type} \hlstd{=} \hlstr{'RNGstream'}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] "RNGstream"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 
     \item Be happy to generate your numbers.
-<<bl2, size='scriptsize',background="white">>=
-unlist(clusterCall(cl, runif, 1))
-@    
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{unlist}\hlstd{(}\hlkwd{clusterCall}\hlstd{(cl, runif,} \hlnum{1}\hlstd{))}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.12701112 0.75958186 0.72850979 0.09570262
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 
   \end{enumerate}
 \end{frame}
@@ -639,14 +735,19 @@ unlist(clusterCall(cl, runif, 1))
 
 \begin{frame}[fragile]{\texttt{parallel : detectCores()}}
   How many cores?
-<<echo=FALSE, include=FALSE,background="white">>=
-library(parallel)
-@
-<<,background="white">>=
-library(parallel)
-mc.cores <- detectCores()
-mc.cores
-@
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(parallel)}
+\hlstd{mc.cores} \hlkwb{<-} \hlkwd{detectCores}\hlstd{()}
+\hlstd{mc.cores}
+\end{alltt}
+\begin{verbatim}
+## [1] 8
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
   {\color{blue} \textit{Warning:} It is important to take into account that you maybe have hyper-threading.}
 \end{frame}
 
@@ -655,24 +756,38 @@ mc.cores
   \begin{columns}[T]
     \begin{column}{.48\textwidth}
         Fork (no Windows) way:
-<<echo=FALSE, include=FALSE,background="white">>=
-library(parallel)
-@
-<<size='scriptsize',background="white">>=
-RNGkind("L'Ecuyer-CMRG")
-unlist(mclapply(rep(1,4), runif))
-@        
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{RNGkind}\hlstd{(}\hlstr{"L'Ecuyer-CMRG"}\hlstd{)}
+\hlkwd{unlist}\hlstd{(}\hlkwd{mclapply}\hlstd{(}\hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{4}\hlstd{), runif))}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.3768615 0.3824588 0.3845725 0.9092709
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
     \end{column}
     \begin{column}{.48\textwidth}
         Cluster way:
-<<size='scriptsize',background="white">>=
-detach("package:snow", character.only=TRUE)
-library(parallel)
-RNGkind("L'Ecuyer-CMRG")
-cl <- makeCluster(2, type="PSOCK")
-unlist(clusterCall(cl, function(x) runif(2)))
-stopCluster(cl)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{detach}\hlstd{(}\hlstr{"package:snow"}\hlstd{,} \hlkwc{character.only}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+\hlkwd{library}\hlstd{(parallel)}
+\hlkwd{RNGkind}\hlstd{(}\hlstr{"L'Ecuyer-CMRG"}\hlstd{)}
+\hlstd{cl} \hlkwb{<-} \hlkwd{makeCluster}\hlstd{(}\hlnum{2}\hlstd{,} \hlkwc{type}\hlstd{=}\hlstr{"PSOCK"}\hlstd{)}
+\hlkwd{unlist}\hlstd{(}\hlkwd{clusterCall}\hlstd{(cl,} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{runif}\hlstd{(}\hlnum{2}\hlstd{)))}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.2540804 0.9748368 0.4398108 0.2789652
+\end{verbatim}
+\begin{alltt}
+\hlkwd{stopCluster}\hlstd{(cl)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
     \end{column}
   \end{columns}
@@ -680,21 +795,32 @@ stopCluster(cl)
 \begin{frame}[fragile]{\texttt{parallel} RNG: reproducible results}
     Basic way to get reproducible results would be \texttt{mc.reset.stream()} --- the parallel random number generator is reinitialized using the current seed
     on the master.
-<<echo=FALSE,background="white">>=
-detach("package:snow", character.only=TRUE)
-library(parallel)
-@  
-<<size='scriptsize',background="white">>=
-detach("package:snow", character.only=TRUE)
-library(parallel)
-RNGkind("L'Ecuyer-CMRG")
-cl <- makeCluster(2, type="PSOCK")
-clusterSetRNGStream(cl, 123)
-unlist(clusterCall(cl, function(x) runif(2)))
-clusterSetRNGStream(cl, 123)
-unlist(clusterCall(cl, function(x) runif(2)))
-stopCluster(cl)
-@        
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{1, 1, 1}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{detach}\hlstd{(}\hlstr{"package:snow"}\hlstd{,} \hlkwc{character.only}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+\hlkwd{library}\hlstd{(parallel)}
+\hlkwd{RNGkind}\hlstd{(}\hlstr{"L'Ecuyer-CMRG"}\hlstd{)}
+\hlstd{cl} \hlkwb{<-} \hlkwd{makeCluster}\hlstd{(}\hlnum{2}\hlstd{,} \hlkwc{type}\hlstd{=}\hlstr{"PSOCK"}\hlstd{)}
+\hlkwd{clusterSetRNGStream}\hlstd{(cl,} \hlnum{123}\hlstd{)}
+\hlkwd{unlist}\hlstd{(}\hlkwd{clusterCall}\hlstd{(cl,} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{runif}\hlstd{(}\hlnum{2}\hlstd{)))}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.1663742 0.3898457 0.3411064 0.9712727
+\end{verbatim}
+\begin{alltt}
+\hlkwd{clusterSetRNGStream}\hlstd{(cl,} \hlnum{123}\hlstd{)}
+\hlkwd{unlist}\hlstd{(}\hlkwd{clusterCall}\hlstd{(cl,} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{runif}\hlstd{(}\hlnum{2}\hlstd{)))}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.1663742 0.3898457 0.3411064 0.9712727
+\end{verbatim}
+\begin{alltt}
+\hlkwd{stopCluster}\hlstd{(cl)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 \end{frame}
 
 \begin{frame}{Differences from \texttt{multicore} and \texttt{snow}}
