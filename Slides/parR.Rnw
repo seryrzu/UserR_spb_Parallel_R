@@ -446,10 +446,10 @@ plot(tm)
 <<size='scriptsize',background="white">>=
 parLapply
 @
-where \texttt{splitList()} is an internal snow function. 
+where \texttt{splitList()} is an internal \texttt{snow} function. 
 \end{frame}
 
-\begin{frame}[fragile]{Example of comparison clusterApply() and parLapply()}
+\begin{frame}[fragile]{Example of comparison \texttt{clusterApply()} and \texttt{parLapply()}}
   \texttt{parLapply()} could be more efficient if you have more tasks than workers.
   Another situation --- you send large arguments to \texttt{parLapply()}.
   Let's take a look at the example.
@@ -545,12 +545,12 @@ unlist(clusterCall(cl, runif, 1))
     \rowcolors{1}{gray!25}{white}
     \centering
     \begin{tabular}{ll}
-      \texttt{mclapply()} & parallel version of \texttt{lapply()}. \\
+      \texttt{mclapply()} & Parallel version of \texttt{lapply()}. \\
       \begin{tabular}{@{}l@{}}
         \texttt{mcmapply()}
       \end{tabular} & 
       \begin{tabular}{@{}l@{}}
-        parallel version of \texttt{mapply()}.
+        Parallel version of \texttt{mapply()}.
       \end{tabular} \\
       \texttt{pvec()} & 
          \begin{tabular}{@{}l@{}} Somewhat an high-level analog of \\ low-level \texttt{clusterSplit()} function. \end{tabular} \\
@@ -650,7 +650,7 @@ mc.cores
   {\color{blue} \textit{Warning:} It is important to take into account that you maybe have hyper-threading.}
 \end{frame}
 
-\begin{frame}[fragile]{\texttt{Parallel} RNG}
+\begin{frame}[fragile]{\texttt{parallel} RNG}
   Unlike \texttt{snow} package no additional packages (like \texttt{rlecuyer}) are needed.
   \begin{columns}[T]
     \begin{column}{.48\textwidth}
