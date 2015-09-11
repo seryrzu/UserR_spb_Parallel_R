@@ -70,7 +70,7 @@ September 12, 2015
         \item Free.
         \item Many basic tools.
         \item \textbf{R} extensions.
-        \item Arguable fast with \textbf{R}-way style and well-implemented \textbf{R} distribution.
+        \item Arguably fast with \textbf{R}-way style and well-implemented \textbf{R} distribution.
       \end{itemize}
       
       \pause
