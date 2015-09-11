@@ -70,7 +70,7 @@ September 12, 2015
         \item Free.
         \item Many basic tools.
         \item \textbf{R} extensions.
-        \item Arguable fast with \textbf{R}-way style and well-implemented \textbf{R} distribution.
+        \item Arguably fast with \textbf{R}-way style and well-implemented \textbf{R} distribution.
       \end{itemize}
       
       \pause
@@ -290,7 +290,7 @@ September 12, 2015
     \rowcolors{1}{gray!25}{white}
     \centering
     \begin{tabular}{ll}
-      \texttt{clusterApply(cl, x, fun, ...)} & Jjobs are being ``recycled''.\\
+      \texttt{clusterApply(cl, x, fun, ...)} & Jobs are being ``recycled''.\\
       \texttt{clusterApplyLB(cl, x, fun, ...)} & Load Balancing version of clusterApply(). \\
        \texttt{clusterCall(cl, fun, ...)} & 
          \begin{tabular}{@{}l@{}}
