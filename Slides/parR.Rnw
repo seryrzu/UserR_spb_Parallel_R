@@ -200,7 +200,7 @@ September 12, 2015
       \rowcolors{1}{gray!25}{white}
       \centering
       \begin{tabular}{rl}
-        \textit{General use case:} & main word is {\color{blue} cluster}, provides {\color{blue} explicit} parallelism. \\
+        \textit{General use case:} & Main word is {\color{blue} cluster}, provides {\color{blue} explicit} parallelism. \\
         \textit{Examples:} & \begin{tabular}{@{}l@{}}Monte Carlo simulations, bootstrapping, cross validation, \\ensemble machine learning algorithms. \end{tabular} \\
         \textit{Solves:} & Single-threaded, memory-bound. \\
         \textit{Cool features}: & 
@@ -235,7 +235,7 @@ September 12, 2015
       \rowcolors{1}{gray!25}{white}
       \centering
       \begin{tabular}{rl}
-        \textit{Start and stop clusters:} & makeCluster, stopCluster. \\
+        \textit{Start and stop clusters:} & \texttt{makeCluster}, \texttt{stopCluster}. \\
         \textit{Low-level (cluster-level) functions:} & 
           \begin{tabular}{@{}l@{}}
             \texttt{cluster*} --- \texttt{clusterApply}, \texttt{clusterApplyLB},\\ \texttt{clusterEvalQ}, 
@@ -290,15 +290,15 @@ September 12, 2015
     \rowcolors{1}{gray!25}{white}
     \centering
     \begin{tabular}{ll}
-      \texttt{clusterApply(cl, x, fun, ...)} & Jjobs are being ``recycled''.\\
-      \texttt{clusterApplyLB(cl, x, fun, ...)} & Load Balancing version of clusterApply(). \\
+      \texttt{clusterApply(cl, x, fun, ...)} & Jobs are being ``recycled''.\\
+      \texttt{clusterApplyLB(cl, x, fun, ...)} & Load Balancing version of \texttt{clusterApply()}. \\
        \texttt{clusterCall(cl, fun, ...)} & 
          \begin{tabular}{@{}l@{}}
-           Calls a function fun with identical \\ arguments ... on each node in the cluster cl \\ and returns a list of the results.
+           Calls a function fun with identical \\ arguments \ldots on each node in the cluster \texttt{cl} \\ and returns a list of the results.
          \end{tabular} \\
        \texttt{clusterEvalQ(cl, expr)} & 
          \begin{tabular}{@{}l@{}}
-           Evaluates an expression expr on each node\\ in the cluster cl; \\ implemented using clusterCall().
+           Evaluates an expression \texttt{expr} on each node\\ in the cluster \texttt{cl}; \\ implemented using \texttt{clusterCall()}.
          \end{tabular} \\
        \begin{tabular}{@{}l@{}}
           \texttt{clusterMap(cl, fun, ...,}\\ \quad \texttt{MoreArgs = NULL, RECYCLE = TRUE)}
@@ -425,7 +425,7 @@ plot(tm)
         \quad \texttt{simplify = TRUE, USE.NAMES = TRUE)}
       \end{tabular} & 
       \begin{tabular}{@{}l@{}}
-        Load Balancing version of \\ clusterApply(). 
+        Parallel version of sapply().
       \end{tabular} \\
       \texttt{parApply(cl, X, MARGIN, FUN, \ldots)} & 
          Parallel version of apply(). \\
