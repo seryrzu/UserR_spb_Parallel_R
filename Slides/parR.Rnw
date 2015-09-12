@@ -52,6 +52,16 @@ knitr::opts_chunk$set(warning=FALSE, messages=FALSE, cache=T)
 \date {
 September 12, 2015
 }
+
+\usepackage[absolute,overlay]{textpos}
+\setlength{\TPHorizModule}{1cm} % Horizontale Einheit
+\setlength{\TPVertModule}{1cm} % Vertikale Einheit
+\addtobeamertemplate{title page}{
+\begin{textblock}{3}(10.5,5)
+  \href{https://vk.com/spbrug}{\includegraphics[width=2in]{spbrug_logo}}
+\end{textblock}
+}{}
+
 \begin{document}
 \begin{frame}
   \titlepage
